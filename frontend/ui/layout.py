@@ -61,7 +61,7 @@ def build_ui():
         <div class="full-width-header">
             <div class="header-inner">
 
-                <h2>🔍 <b>RAG-VISION ENGINE — Visual Reasoning Interface</b></h2>
+                <h1>🔍 <b>Retrieval-Augmented Generation Vision Engine — Visual Reasoning Interface</b></h1>
 
                 <p>
                 This interface provides a <b>semi-automatic labeling system</b> powered by 
@@ -75,16 +75,12 @@ def build_ui():
                 <b>automatic data labeling</b>, <b>few-shot visual classification</b>, and 
                 <b>retrieval-enhanced visual reasoning</b>.
                 </p>
-                <h3><b>Author</b></h3>
-                <p><b>Raul Artigues Femenia</b></p>
-                <p>Project Repository: 
+                <p>GitHub: 
                     <a href="https://github.com/raulartigues/rag-vision-engine" 
                     target="_blank" rel="noopener noreferrer">
                         https://github.com/raulartigues/rag-vision-engine
                     </a>
                 </p>
-                <p>License: MIT</p>
-
             </div>
         </div>
             """
