@@ -9,10 +9,13 @@ app_file: "app.py"
 pinned: false
 ---
 
-# <center>Retrieval-Augmented Generation Vision Engine 🔍 </center> 
+# <center>RAG-Vision Engine 🔍</center>
+
+<center>Retrieval-Augmented Visual Reasoning & Semi-Automatic Labeling<br></center>
+<center><span style="opacity: 0.7;">Powered by Qwen2-VL & CLIP Retrieval</span></center>
 
 <p align="center">
-  <img src="assets/image_1.jpg" width="85%" alt="RAG Vision Engine">
+  <img src="assets/rag_vision_architecture_dynamic.svg" width="85%" alt="RAG Vision Engine">
 </p>
 
 <p align="center">
@@ -23,6 +26,64 @@ pinned: false
   <img src="https://img.shields.io/badge/License-MIT-green" />
   <img src="https://img.shields.io/badge/HuggingFace-Space%20Ready-orange?logo=huggingface" />
 </p>
+
+---
+
+## 🚀 Overview
+
+The **Retrieval-Augmented Generation Vision Engine (RAG-Vision Engine)** combines  
+**visual embedding retrieval (CLIP)** with **multimodal reasoning (Qwen2-VL)** to perform  
+**binary visual classification with contextual grounding and explainability**.
+
+Rather than training a model from scratch, the engine uses a  
+*support set* of user-provided examples to guide decision-making.
+
+---
+
+## 🧩 Models Used
+
+### **1. CLIP (ViT-B/32) — Visual Retrieval Backbone**
+- Embeds all support images into a unified semantic space  
+- Retrieves top-k most similar visual patches  
+- Provides contextual evidence to the reasoning model
+
+### **2. Qwen2-VL — Vision-Language Reasoning Model**
+- Processes the query image + retrieved support patches  
+- Executes rule-based reasoning guided by prompts  
+- Produces a **binary label**, a **detailed explanation**, and a **JSON-formatted output**
+
+---
+
+## 🎯 Premise
+
+This engine is built for **binary visual inspection tasks**, such as:
+
+- clean vs dirty  
+- pass vs fail  
+- acceptable vs defective  
+- good vs bad  
+
+The goal is to allow rapid deployment of classification workflows  
+**without dataset annotation or model training**.
+
+---
+
+## 🎯 Objectives
+
+- 🧠 Provide interpretable, retrieval-grounded classification  
+- ⚡ Enable fast evaluation pipelines for industry and research  
+- 🖼️ Leverage small support sets instead of big datasets  
+- 🔍 Improve robustness using similarity-based context  
+- 🧩 Generate clean, structured JSON outputs for automation  
+
+---
+
+## 📝 Summary
+
+The **RAG-Vision Engine** merges **retrieval** and **generation** into a single  
+hybrid system capable of performing reliable, explainable visual analysis.  
+It is lightweight, flexible, and ideal for rapid prototyping in computer vision  
+workflows where clarity and reasoning matter.
 
 ---
 
@@ -74,23 +135,7 @@ It enables:
 ### 🔹 Integrated Full Stack
 - **FastAPI** for serving inference  
 - **Gradio** for interactive UI  
-- Both run inside a **single Docker container**  
-
----
-
-# 🧠 Models Used
-
-## 1. CLIP ViT-B/32  
-**Task:** Patch-based embedding + retrieval  
-- Converts each image into a grid of embeddings  
-- Computes cosine similarity to support patches  
-- Provides evidence for Qwen2-VL  
-
-## 2. Qwen2-VL-2B-Instruct  
-**Task:** Multimodal reasoning  
-- Accepts multiple images  
-- Accepts system/user prompts  
-- Generates explanations and classifications  
+- Both run inside a **single Docker container**
 
 ---
 
@@ -114,12 +159,12 @@ Both follow the same “retrieve → reason” philosophy, but Vision RAG applie
 ```text
 rag-vision-engine
 ├── assets
-│   ├── diagram.jpg
-│   ├── dirty.jpg
-│   └── clean.jpg
+│   ├── files.jpg
+│   ├── files.svg
+│   └── files.png
 ├── backend
 │   ├── api
-│   │   ├── routers
+│   │   ├── config
 │   │   │   └── api_settings.py
 │   │   ├── routers
 │   │   │   ├── api_v1
@@ -185,6 +230,8 @@ rag-vision-engine
 │   │   └── layout.py
 │   ├── utils
 │   │   ├── image_utils.py
+│   │   ├── rag_vision_architecture.py
+│   │   ├── rag_vision_diagram.py
 │   │   └── text_utils.py
 │   └── app.py
 ├── .gitignore
