@@ -83,8 +83,7 @@ def run_rag_inference(
     max_new_tokens,
     input_resolution,
     support_res,
-    support_patch_size,
-    flag="VisibleDirtyFlag",
+    support_patch_size
     ):
     """
     Run a full RAG-Vision inference request through the backend API.
@@ -104,7 +103,6 @@ def run_rag_inference(
         input_resolution (int): Size to which the input image is resized.
         support_res (int): Resolution used for the support dataset.
         support_patch_size (int): Patch size for CLIP retrieval.
-        flag (str): Key for the decision flag (default: "VisibleDirtyFlag").
 
     Returns:
         dict:
@@ -123,7 +121,6 @@ def run_rag_inference(
     payload = {
         "imageId": None,
         "encodedImage": encoded_image,
-        "flagKey": flag,
         "systemPrompt": system_prompt,
         "userPrompt": user_prompt,
         "kRetrieval": k_retrieval,
