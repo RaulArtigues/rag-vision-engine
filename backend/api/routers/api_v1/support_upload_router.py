@@ -6,7 +6,16 @@ import os
 
 router = APIRouter()
 
-SUPPORT_ROOT = os.path.join("/data", "support")
+IS_HF = "SPACE_ID" in os.environ
+
+if IS_HF:
+    BASE_DATA_DIR = "/data"
+else:
+    BASE_DATA_DIR = os.path.abspath("../../data")
+
+SUPPORT_ROOT = os.path.join(BASE_DATA_DIR, "support")
+
+os.makedirs(SUPPORT_ROOT, exist_ok=True)
 
 def save_image_bytes(class_name: str, filename: str, img_bytes: bytes):
     """

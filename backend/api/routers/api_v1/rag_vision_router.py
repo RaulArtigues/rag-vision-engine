@@ -60,7 +60,6 @@ async def rag_vision_inference(payload: RagVisionInput):
 
     required_fields = {
         "encodedImage": payload.encodedImage,
-        "flagKey": payload.flagKey,
         "systemPrompt": payload.systemPrompt,
         "userPrompt": payload.userPrompt,
     }
@@ -75,7 +74,6 @@ async def rag_vision_inference(payload: RagVisionInput):
         return JSONResponse(
             RagVisionOutput.fails(
                 imageId=imageId,
-                flagKey=payload.flagKey,
                 elapsedTimeMs=elapsed,
                 err=f"Missing fields: {missing}",
             ),
@@ -91,7 +89,6 @@ async def rag_vision_inference(payload: RagVisionInput):
 
         result = rag_service.analyze(
             b64_image=payload.encodedImage,
-            flagKey=payload.flagKey,
             system_prompt=payload.systemPrompt,
             user_prompt=payload.userPrompt,
             imageId=imageId,
@@ -116,7 +113,6 @@ async def rag_vision_inference(payload: RagVisionInput):
         return JSONResponse(
             RagVisionOutput.fails(
                 imageId=imageId,
-                flagKey=payload.flagKey,
                 elapsedTimeMs=elapsed,
                 err=str(e),
             ),
@@ -132,7 +128,6 @@ async def rag_vision_inference(payload: RagVisionInput):
     return JSONResponse(
         RagVisionOutput.success_output(
             imageId=imageId,
-            flagKey=payload.flagKey,
             elapsedTimeMs=elapsed,
             flag=result.get("flag"),
             explanation=result.get("explanation"),

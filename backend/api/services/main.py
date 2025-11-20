@@ -138,7 +138,6 @@ class RagVisionService:
     def analyze(
         self,
         b64_image: str,
-        flagKey: str,
         system_prompt: str,
         user_prompt: str,
         *,
@@ -166,7 +165,6 @@ class RagVisionService:
 
         Args:
             b64_image (str): Base64-encoded representation of the input image.
-            flagKey (str): Identifier for routing/logic within the RAG pipeline.
             system_prompt (str): System-level instruction for the VLM.
             user_prompt (str): User query or request.
             k_retrieval (int): Number of CLIP patches to retrieve.
@@ -195,12 +193,12 @@ class RagVisionService:
 
         imageId = imageId
 
-        postprocessor = Postprocessor(flag_key=flagKey)
+        postprocessor = Postprocessor()
         self.preprocessor = ImagePreprocessor(target_size=input_resolution)
 
         try:
             LoggerManager.log_formatter(
-                f"Starting RAG-Vision pipeline with flagKey='{flagKey}'",
+                f"Starting RAG-Vision pipeline",
                 imageId, 2000, level="INFO")
 
             class_dirs = self._discover_class_dirs(imageId=imageId)
@@ -245,7 +243,6 @@ class RagVisionService:
                 "class_scores": result["class_scores"],
                 "raw_response": raw,
                 "original_size": orig_size,
-                "flagKey": flagKey,
                 "imageId": imageId,
             }
 
@@ -259,6 +256,5 @@ class RagVisionService:
             return {
                 "success": False,
                 "error": str(e),
-                "flagKey": flagKey,
                 "imageId": imageId,
             }

@@ -10,7 +10,6 @@ class RagVisionInput(BaseModel):
     configuration.
     """
     encodedImage: str = Field(..., description="Base64-encoded representation of the input image. May include a data URI prefix.")
-    flagKey: str = Field(..., description="Identifier used for routing, feature toggling, or conditional logic within the RAG system.")
     systemPrompt: str = Field(..., description="System-level instruction that defines behavior and sets constraints before user prompt execution.")
     userPrompt: str = Field(..., description="User instruction or query that the model should respond to using RAG and visual context.")
     kRetrieval: int = Field(..., description="Number of relevant patches/items to retrieve during RAG similarity lookup.")
