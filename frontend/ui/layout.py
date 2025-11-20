@@ -8,7 +8,22 @@ import json
 
 def load_svg_from_assets(filename: str) -> str:
     """
-    Loads an SVG file from the assets directory and returns its raw content.
+    Load an SVG file from the project's assets directory.
+
+    This function constructs the absolute path to the SVG file based on the
+    calling module's location and returns the raw SVG markup as a string.
+
+    Args:
+        filename (str):
+            The name of the SVG file to be loaded (e.g., ``"diagram.svg"``).
+
+    Returns:
+        str:
+            The full SVG file content as a UTF-8 string.
+
+    Raises:
+        FileNotFoundError:
+            If the specified SVG file does not exist inside the assets directory.
     """
     import os
 
@@ -23,9 +38,25 @@ def load_svg_from_assets(filename: str) -> str:
 
 def build_ui():
     """
-    Interfaz Gradio con Arquitectura Técnica Visual (SVG Animado).
+    Build and return the complete Gradio UI for the RAG-Vision Engine.
+
+    This interface integrates:
+    - A visual architectural SVG diagram loaded from assets
+    - A step-by-step instructions panel
+    - Inputs for defining support classes and prompts
+    - Image upload components
+    - Retrieval and generation configuration parameters
+    - Execution controls for triggering inference
+    - A postprocessing area including raw JSON results
+
+    The UI uses custom CSS for a dark, glass-panel inspired theme and includes
+    interactive elements such as accordions, galleries and responsive layouts.
+
+    Returns:
+        gr.Blocks:
+            A fully constructed Gradio Blocks application that can be launched
+            directly via ``ui.launch()`` or embedded inside another system.
     """
-    
     css_style = """
         .gradio-container {
             background-color: #0b0f19 !important;
@@ -378,7 +409,42 @@ def build_ui():
             kret, maxpatch, maxtok,
             inpres, supres, suppatch
             ):
-            
+            """
+            Execute the full RAG-Vision pipeline including:
+
+            1. Validation of class labels and prompts
+            2. Uploading support images for both classes
+            3. Base64 encoding of the query image
+            4. Calling the RAG inference backend service
+            5. Returning structured outputs to the UI
+
+            Args:
+                class1 (str): Name of the first class.
+                class2 (str): Name of the second class.
+                gallery1 (list): Images belonging to class 1.
+                gallery2 (list): Images belonging to class 2.
+                sys_prompt (str): System prompt for the VLM.
+                usr_prompt (str): User prompt describing the task.
+                q_img (str): Filepath to the query image.
+                temp (float): Sampling temperature.
+                top (float): Top-p nucleus sampling.
+                kret (int): Number of retrieved support images per class.
+                maxpatch (int): Max number of visual patches per class.
+                maxtok (int): Maximum tokens for generation.
+                inpres (int): Input resolution of the query image.
+                supres (int): Resolution of support images.
+                suppatch (int): Patch size for retrieval.
+
+            Returns:
+                tuple:
+                    - Predicted flag (str)
+                    - Reasoning text (str)
+                    - Raw JSON response (str)
+
+            Raises:
+                ValueError:
+                    If labels or prompts fail validation.
+            """
             if not validate_label(class1): return "ERROR", "Invalid Class 1", ""
             if not validate_label(class2): return "ERROR", "Invalid Class 2", ""
             if not validate_english(sys_prompt): return "ERROR", "System Prompt must be English", ""
@@ -387,6 +453,16 @@ def build_ui():
             classes_json = json.dumps(classes_list)
 
             def get_files_from_gallery(gallery_data):
+                """
+                Extract file paths from a gallery of images.
+
+                Args:
+                    gallery_data (list): List of image data, where each item can be
+                    a string (single image) or a tuple/list (multiple images).
+
+                Returns:
+                    list: List of file paths extracted from the gallery data.
+                """
                 if not gallery_data: return []
                 files = []
                 for item in gallery_data:
@@ -400,6 +476,23 @@ def build_ui():
             files2 = get_files_from_gallery(gallery2)
 
             def upload_batch(file_list, class_name, start_index):
+                """
+                Upload a batch of support images for a specific class.
+
+                Args:
+                    file_list (list): List of file paths to upload.
+                    class_name (str): Name of the class to which the images belong.
+                    start_index (int): Starting index for image numbering.
+
+                Returns:
+                    tuple:
+                        - bool: True if all uploads succeed, False otherwise.
+                        - int: Next available index after the upload batch.
+
+                Raises:
+                    ValueError:
+                        If any image upload fails.
+                """
                 idx = start_index
                 if not file_list: return True, idx
                 for fp in file_list:
@@ -447,6 +540,13 @@ def build_ui():
         )
 
         def load_example():
+            """
+            Load a predefined example dataset into the UI.
+
+            Returns:
+                tuple: Pre-filled class names, example images, prompts, and one
+                query image suitable for testing the interface.
+            """
             ex = build_example_payload()
             return (
                 ex["class1"], ex["class2"],
@@ -460,6 +560,12 @@ def build_ui():
         )
 
         def reset_inputs():
+            """
+            Reset all user inputs in the interface.
+
+            Returns:
+                tuple: Empty strings and None values replacing all user-filled fields.
+            """
             return "", "", None, None, "", "", None
 
         reset_btn.click(

@@ -2,12 +2,34 @@ import os
 
 def save_svg(svg_content: str, filename: str, relative_dir: str = "../../assets"):
     """
-    Saves an SVG string into a relative folder.
+    Save an SVG string into a specified relative directory.
+
+    This helper function writes raw SVG markup into a `.svg` file located in a
+    user-defined relative folder (default: `../../assets`). It ensures that the
+    directory exists, creates it if necessary, and returns the final absolute
+    path to the generated file.
 
     Args:
-        svg_content (str): The SVG content as a string.
-        filename (str): Output filename.
-        relative_dir (str): Relative directory to store the file (default: ../assets).
+        svg_content (str):
+            The SVG document as a string. Must contain valid XML/SVG markup.
+        filename (str):
+            Name of the output SVG file (e.g., "diagram.svg").
+        relative_dir (str, optional):
+            Relative directory path where the SVG will be stored.
+            Defaults to `"../../assets"`.
+
+    Returns:
+        str:
+            The absolute path to the saved SVG file.
+
+    Side Effects:
+        - Creates the target directory if it does not already exist.
+        - Writes the SVG content to disk.
+
+    Example:
+        >>> from save_svg import save_svg
+        >>> save_svg("<svg>...</svg>", "architecture.svg")
+        SVG saved in: /absolute/path/to/assets/architecture.svg
     """
     script_dir = os.path.dirname(os.path.abspath(__file__))
     target_dir = os.path.join(script_dir, relative_dir)

@@ -3,8 +3,50 @@ import os
 
 def generate_engineering_svg(filename="rag_vision_architecture_dynamic.svg"):
     """
-    Generates a high-fidelity, engineering-grade SVG diagram representing
-    the RAG-Vision backend architecture with DYNAMIC lines and MATH specs.
+    Generate a high-fidelity, engineering-grade SVG diagram representing the
+    complete RAG-Vision backend architecture.
+
+    This function programmatically constructs a large, annotated SVG that
+    visualizes both the **offline phase** (vector indexing, patch extraction,
+    CLIP embedding, tensor storage) and the **online inference phase**
+    (normalization, embedding, retrieval, evidence extraction, contextual
+    packaging, VLM reasoning, and post-processing).
+
+    The diagram includes:
+        - Engineered grid background
+        - Dynamic animated flow lines (CSS keyframe-based)
+        - Color-coded architectural modules
+        - Mathematical formulas (e.g., cosine similarity)
+        - Multimodal context window visualization
+        - Qwen2-VL inference bubble
+        - Final JSON output block
+        - Developer credit footer
+
+    The resulting SVG is saved into the project's `/assets/` directory.
+
+    Args:
+        filename (str, optional):
+            Name of the SVG file to generate. Defaults to
+            ``"rag_vision_architecture_dynamic.svg"``.
+
+    Returns:
+        None
+            The function writes the SVG file to disk but does not return anything.
+
+    Side Effects:
+        - Creates the ``assets`` directory if it does not exist.
+        - Writes the fully constructed SVG to ``assets/<filename>``.
+        - Prints the resolved absolute path of the generated asset.
+
+    Example:
+        >>> from generate_engineering_svg import generate_engineering_svg
+        >>> generate_engineering_svg()
+        SVG also saved to assets/ at: /absolute/path/assets/rag_vision_architecture_dynamic.svg
+
+    Notes:
+        This function is intended for engineering documentation, research papers,
+        technical blogs, and UI embedding. The SVG is fully static except for
+        animated flow lines implemented through embedded CSS.
     """
     C_BG = "#0b0f19"
     C_GRID = "#1f2937"
