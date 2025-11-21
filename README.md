@@ -24,9 +24,10 @@ pinned: false
   <img src="https://img.shields.io/badge/python-3.12-blue" />
   <img src="https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white" />
   <img src="https://img.shields.io/badge/License-MIT-green" />
-  <img src="https://img.shields.io/badge/HuggingFace-Space%20Ready-orange?logo=huggingface" />
+  <a href="https://huggingface.co/spaces/RaulArtigues/rag-vision-engine" target="_blank">
+    <img src="https://img.shields.io/badge/HuggingFace-Demo%20Space-orange?logo=huggingface" />
+  </a>
 </p>
-
 ---
 
 ## 🚀 Overview
