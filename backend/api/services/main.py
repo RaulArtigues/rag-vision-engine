@@ -22,9 +22,19 @@ class RagVisionService:
 
     It acts as the main entry point for the RAG-Vision API.
     """
+
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     BACKEND_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", ".."))
-    SUPPORT_ROOT = os.path.join(BACKEND_DIR, "data", "support")
+
+    IS_HF = "SPACE_ID" in os.environ
+
+    if IS_HF:
+        BASE_DATA_DIR = "/data"
+    else:
+        BASE_DATA_DIR = os.path.join(BACKEND_DIR, "data")
+
+    SUPPORT_ROOT = os.path.join(BASE_DATA_DIR, "support")
+    os.makedirs(SUPPORT_ROOT, exist_ok=True)
 
     _instance: Optional["RagVisionService"] = None
 
@@ -58,8 +68,8 @@ class RagVisionService:
         self._warmup_vlm()
 
         self._initialized = True
-
-    def _warmup_vlm(self):
+        
+    def _warmup_vlm(self) -> None:
         """
         Load only the Vision-Language Model (Qwen2-VL-2B-Instruct) into memory.
 
@@ -74,64 +84,98 @@ class RagVisionService:
 
         LoggerManager.log_formatter(
             "Warming up: Loading Qwen2-VL model into memory...",
-            warm_image_id, 2000, level="INFO")
+            warm_image_id,
+            2000,
+            level="INFO",
+        )
 
         try:
             dummy_index = SupportIndex(
                 class_dirs={},
                 clip_local_dir="",
                 res=0,
-                patch_size=0
+                patch_size=0,
             )
 
             self.engine = RagVisionInference(dummy_index)
 
             LoggerManager.log_formatter(
                 "Qwen2-VL model loaded successfully and ready.",
-                warm_image_id, 2000, level="INFO")
+                warm_image_id,
+                2000,
+                level="INFO",
+            )
 
         except Exception as e:
             LoggerManager.log_formatter(
                 f"VLM warm-up FAILED: {e}",
-                warm_image_id, 4000, level="ERROR")
-            
+                warm_image_id,
+                4000,
+                level="ERROR",
+            )
             raise
 
-    def _discover_class_dirs(self, imageId: str):
+    def _discover_class_dirs(self, imageId: Optional[str] = None) -> Dict[str, str]:
         """
         Scan the support directory and discover available class folders.
 
         Args:
-            imageId (str): Identifier used for logging and tracking.
+            imageId (str, optional): Identifier used for logging and tracking.
 
         Returns:
             dict: Mapping of class names → absolute directory paths.
 
         Raises:
-            RuntimeError: If the support root or class folders do not exist.
+            RuntimeError:
+                - If SUPPORT_ROOT is not configured.
+                - If the support root does not exist or is not a directory.
+                - If no valid class folders are found.
         """
-        root = self.SUPPORT_ROOT
+        log_id = imageId or ""
+
+        root = getattr(self, "SUPPORT_ROOT", None)
+        if not root:
+            msg = "SUPPORT_ROOT is not configured in RagVisionService."
+            LoggerManager.log_formatter(msg, log_id, 5000, level="ERROR")
+            raise RuntimeError(msg)
+
+        if not os.path.exists(root):
+            msg = f"Support root not found: {root}"
+            LoggerManager.log_formatter(msg, log_id, 4000, level="ERROR")
+            raise RuntimeError(msg)
 
         if not os.path.isdir(root):
-            LoggerManager.log_formatter(
-                f"Support root not found: {root}", imageId, 4000, level="ERROR")
-            raise RuntimeError(f"Support root not found: {root}")
+            msg = f"Support root exists but is not a directory: {root}"
+            LoggerManager.log_formatter(msg, log_id, 4000, level="ERROR")
+            raise RuntimeError(msg)
 
-        class_dirs = {
-            name: os.path.join(root, name)
-            for name in os.listdir(root)
-            if os.path.isdir(os.path.join(root, name))
-        }
+        try:
+            entries = os.listdir(root)
+        except OSError as e:
+            msg = f"Failed to list support root '{root}': {e}"
+            LoggerManager.log_formatter(msg, log_id, 5000, level="ERROR")
+            raise RuntimeError(msg)
+
+        class_dirs: Dict[str, str] = {}
+        for name in entries:
+            if name.startswith("."):
+                continue
+
+            full_path = os.path.join(root, name)
+            if os.path.isdir(full_path):
+                class_dirs[name] = full_path
 
         if not class_dirs:
-            LoggerManager.log_formatter(
-                f"No support class folders found under: {root}",
-                imageId, 4000, level="ERROR")
-            raise RuntimeError(f"No class folders found under {root}")
+            msg = f"No support class folders found under: {root}"
+            LoggerManager.log_formatter(msg, log_id, 4000, level="ERROR")
+            raise RuntimeError(msg)
 
         LoggerManager.log_formatter(
-            f"Support classes discovered: {list(class_dirs.keys())}",
-            imageId, 2000, level="INFO")
+            f"Support classes discovered ({len(class_dirs)}): {sorted(class_dirs.keys())}",
+            log_id,
+            2000,
+            level="INFO",
+        )
 
         return class_dirs
 
@@ -150,7 +194,7 @@ class RagVisionService:
         support_res: int,
         support_patch_size: int,
         support_clip_local_dir: Optional[str],
-        imageId: Optional[str] = None
+        imageId: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Run the complete RAG-Vision inference pipeline on a single image request.
@@ -186,22 +230,23 @@ class RagVisionService:
                 - class_scores (dict)
                 - raw_response (str)
                 - original_size (tuple)
-                - flagKey (str)
                 - imageId (str)
                 - error (str, if failure)
         """
-
-        imageId = imageId
 
         postprocessor = Postprocessor()
         self.preprocessor = ImagePreprocessor(target_size=input_resolution)
 
         try:
             LoggerManager.log_formatter(
-                f"Starting RAG-Vision pipeline",
-                imageId, 2000, level="INFO")
+                "Starting RAG-Vision pipeline",
+                imageId or "",
+                2000,
+                level="INFO",
+            )
 
             class_dirs = self._discover_class_dirs(imageId=imageId)
+
             self.support_index = SupportIndex(
                 class_dirs=class_dirs,
                 clip_local_dir=support_clip_local_dir,
@@ -234,13 +279,16 @@ class RagVisionService:
 
             LoggerManager.log_formatter(
                 "RAG-Vision pipeline completed successfully.",
-                imageId, 2000, level="INFO")
+                imageId or "",
+                2000,
+                level="INFO",
+            )
 
             return {
                 "success": True,
-                "flag": parsed["flag"],
-                "explanation": parsed["explanation"],
-                "class_scores": result["class_scores"],
+                "flag": parsed.get("flag"),
+                "explanation": parsed.get("explanation"),
+                "class_scores": result.get("class_scores"),
                 "raw_response": raw,
                 "original_size": orig_size,
                 "imageId": imageId,
@@ -249,8 +297,11 @@ class RagVisionService:
         except Exception as e:
             LoggerManager.log_formatter(
                 f"Pipeline ERROR: {e}",
-                imageId, 5000, level="ERROR")
-            
+                imageId or "",
+                5000,
+                level="ERROR",
+            )
+
             traceback.print_exc()
 
             return {
