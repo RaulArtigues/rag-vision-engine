@@ -58,13 +58,43 @@ def build_ui():
             directly via ``ui.launch()`` or embedded inside another system.
     """
     css_style = """
+        /* 1. FORZAR VARIABLES DE TEMA (Sobrescribe el modo claro de Gradio) */
+        :root, .gradio-container {
+            --body-background-fill: #0b0f19 !important;
+            --background-fill-primary: #0b0f19 !important;
+            --background-fill-secondary: #111827 !important;
+            --block-background-fill: #131926 !important;
+            --block-label-background-fill: #131926 !important;
+            --input-background-fill: #1f2937 !important;
+            --input-background-fill-focus: #374151 !important;
+            --table-border-color: #374151 !important;
+            --block-border-color: #374151 !important;
+            --border-color-primary: #374151 !important;
+            
+            /* Textos */
+            --body-text-color: #e5e7eb !important;
+            --block-label-text-color: #d1d5db !important;
+            --block-title-text-color: #e5e7eb !important;
+            --input-placeholder-color: #9ca3af !important;
+        }
+
+        /* 2. ESTILOS BASE DE LA APLICACIÓN */
         .gradio-container {
             background-color: #0b0f19 !important;
             font-family: 'IBM Plex Sans', sans-serif;
+            color: #e5e7eb !important;
         }
+        
+        /* Asegurar que todos los bloques tengan fondo oscuro por defecto */
+        .gr-block, .gr-box, .gr-panel, fieldset {
+            background-color: #131926 !important;
+            border: 1px solid #374151 !important;
+        }
+
         p, span, div, label, input, textarea, button, .gr-button, .prose, .prose p, .prose h3, .prose h4 {
             font-size: 16px !important; 
             line-height: 1.5;
+            color: #e5e7eb !important;
         }
 
         /* HEADER */
@@ -127,6 +157,21 @@ def build_ui():
             margin-top: 1rem !important;
         }
 
+        /* INPUTS & TEXTAREAS - FORZAR OSCURO */
+        textarea, input, .gr-input, .gr-text-input { 
+            font-size: 16px !important; 
+            background-color: #1f2937 !important; 
+            border-color: #374151 !important; 
+            color: white !important;
+        }
+        /* Eliminar fondo blanco en inputs numéricos */
+        input[type="number"] { 
+            background-color: #1f2937 !important;
+            min-width: 100px !important; 
+            text-align: right; 
+            color: white !important;
+        }
+
         /* BOTONES */
         .btn-row { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
         .capsule-btn {
@@ -143,7 +188,7 @@ def build_ui():
         .favicon-icon { width: 20px; height: 20px; object-fit: contain; border-radius: 4px; }
         .capsule-btn svg { fill: currentColor; width: 20px; height: 20px; }
         
-        /* ESTILOS GENERALES */
+        /* LABELS Y TÍTULOS */
         .gr-input-label, label span, .prose h4, span.label-wrap span {
             font-size: 16px !important; font-weight: 600; color: #e5e7eb !important;
         }
@@ -152,19 +197,53 @@ def build_ui():
             margin-top: 0 !important; margin-bottom: 1rem !important;
         }
         .params-panel h3 { margin-top: 0.5rem !important; color: #e5e7eb !important; }
-        textarea, input { font-size: 16px !important; background-color: #111827 !important; border-color: #374151 !important; }
         
+        /* RAW JSON STYLE */
         .raw-json textarea {
             font-family: "Menlo", monospace !important;
             font-size: 0.95rem !important;
             max-height: 350px !important;
             overflow-y: auto !important;
             white-space: pre-wrap !important;
+            background-color: #0f172a !important; /* Fondo más oscuro para código */
         }
 
-        input[type="number"] { min-width: 100px !important; text-align: right; }
-        .gr-button { font-size: 16px !important; padding: 8px 16px; }
+        /* Botón "Secondary" (Load Example) - Estaba saliendo blanco/gris claro */
+        .gradio-container button.secondary {
+            background-color: #1f2937 !important;   /* Gris oscuro azulado */
+            border: 1px solid #374151 !important;
+            color: #e5e7eb !important;              /* Texto claro */
+            transition: background-color 0.2s;
+        }
+        .gradio-container button.secondary:hover {
+            background-color: #374151 !important;   /* Un poco más claro al pasar ratón */
+            border-color: #4b5563 !important;
+        }
+
+        /* Botón "Primary" (Run Analysis) - Estilo destacado */
+        .gradio-container button.primary {
+            background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%) !important; /* Gradiente Indigo */
+            border: 1px solid #6366f1 !important;
+            color: #ffffff !important;
+            font-weight: 600;
+        }
+        .gradio-container button.primary:hover {
+            filter: brightness(1.2);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Botón "Stop" (Reset) - Rojo oscuro en lugar de rojo alerta claro */
+        .gradio-container button.stop {
+            background-color: #450a0a !important;   /* Rojo muy oscuro (Sangre) */
+            border: 1px solid #7f1d1d !important;
+            color: #fca5a5 !important;              /* Rojo claro texto */
+        }
+        .gradio-container button.stop:hover {
+            background-color: #7f1d1d !important;
+            color: white !important;
+        }
         
+        /* FOOTER */
         .custom-footer {
             text-align: center; margin-top: 4rem; padding-top: 1.5rem;
             border-top: 1px solid #1f2937; color: #6b7280; font-size: 16px !important; 
