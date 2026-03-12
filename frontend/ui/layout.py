@@ -36,6 +36,22 @@ def load_svg_from_assets(filename: str) -> str:
     with open(svg_path, "r", encoding="utf-8") as f:
         return f.read()
 
+
+def load_png_data_uri(filename: str) -> str:
+    """Load a PNG from assets and return a base64 data URI."""
+    import os
+    import base64
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    png_path = os.path.join(current_dir, "..", "..", "assets", filename)
+
+    if not os.path.isfile(png_path):
+        raise FileNotFoundError(f"PNG not found: {png_path}")
+
+    with open(png_path, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode("ascii")
+    return f"data:image/png;base64,{encoded}"
+
 def build_ui():
     """
     Build and return the complete Gradio UI for the RAG-Vision Engine.
@@ -83,6 +99,7 @@ def build_ui():
             background-color: #0b0f19 !important;
             font-family: 'IBM Plex Sans', sans-serif;
             color: #e5e7eb !important;
+            overflow-x: hidden;
         }
         
         /* Asegurar que todos los bloques tengan fondo oscuro por defecto */
@@ -138,7 +155,47 @@ def build_ui():
             border: 1px solid #374151;
             border-radius: 12px;
             padding: 1rem;
+            cursor: zoom-in;
         }
+
+        /* MODAL PARA AMPLIAR SVG */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            padding: 1rem;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-content {
+            position: relative;
+            background: #0b0f19;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 1rem 1.25rem 1.25rem 1.25rem;
+            width: min(95vw, 1200px);
+            max-height: 90vh;
+            overflow: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+        .modal-body svg { width: 100%; height: auto; }
+        .modal-close {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 38px;
+            height: 38px;
+            border-radius: 999px;
+            border: 1px solid #374151;
+            background: #1f2937;
+            color: #e5e7eb;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        body.modal-open { overflow: hidden !important; }
 
         /* PANELES */
         .glass-panel {
@@ -251,10 +308,75 @@ def build_ui():
         .custom-footer a { color: #9ca3af; text-decoration: none; }
         .custom-footer a:hover { color: #e5e7eb; text-decoration: underline; }
         footer {visibility: hidden}
+
+        /* HOW-TO SECTION */
+        .howto-section {
+            width: 100%;
+            padding: 2rem;
+            border-radius: 12px;
+            background: linear-gradient(145deg, #0f172a 0%, #111827 50%, #1e1b4b 100%);
+            border: 1px solid #374151;
+            box-shadow: 0 12px 25px rgba(0,0,0,0.35);
+            margin-bottom: 2rem;
+        }
+        .howto-title {
+            text-align: center;
+            font-size: 28px;
+            color: #e5e7eb;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.5px;
+        }
+        .howto-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            padding: 0;
+        }
+        .howto-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            padding: 1.25rem;
+            backdrop-filter: blur(6px);
+        }
+        .howto-card h3 {
+            color: #a5b4fc;
+            margin-bottom: 0.8rem;
+            font-size: 1.05rem;
+        }
+        .howto-card p {
+            color: #d1d5db;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        /* Responsive tweaks */
+        @media (max-width: 768px) {
+            .depth-header { padding: 1.25rem; }
+            .depth-title { font-size: 2rem !important; }
+            .depth-subtitle { font-size: 22px !important; }
+            .howto-section { padding: 1.25rem; margin-bottom: 1.5rem; }
+            .howto-title { font-size: 24px; margin-bottom: 1rem; }
+            .howto-grid { gap: 0.9rem; }
+            .howto-card { padding: 1rem; }
+        }
+
+        @media (max-width: 480px) {
+            .depth-header { padding: 1rem; }
+            .depth-title { font-size: 1.75rem !important; }
+            .depth-subtitle { font-size: 18px !important; }
+            .btn-row { gap: 0.5rem; }
+            .capsule-btn { width: 100%; justify-content: center; }
+            .svg-container { padding: 0.75rem; }
+            .howto-title { font-size: 20px; }
+            .howto-grid { gap: 0.75rem; }
+            .howto-card p { font-size: 14px; }
+        }
     """
 
     github_svg = """<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>"""
-    
+    favicon_data_uri = load_png_data_uri("favicon.png")
     technical_flow_svg = load_svg_from_assets("rag_vision_architecture_dynamic.svg")
 
     with gr.Blocks(css=css_style, theme=gr.themes.Soft()) as ui:
@@ -273,121 +395,113 @@ def build_ui():
                         {github_svg}
                         View Code
                     </a>
-                    <a href="https://www.raulartigues.com/en/blog" target="_blank" class="capsule-btn">
-                        <img src="https://www.raulartigues.com/favicon.ico" class="favicon-icon" />
+                    <a href="https://www.raulartigues.com/blog-tecnico" target="_blank" class="capsule-btn">
+                        <img src="{favicon_data_uri}" class="favicon-icon" />
                          Case Study & Slides
                     </a>
                 </div>
             </div>
 
-            <div class="svg-container">
+            <div class="svg-container" id="arch-svg-trigger" title="Click to enlarge">
                 {technical_flow_svg}
             </div>
+
+            <div class="modal-overlay" id="arch-modal" aria-hidden="true">
+                <div class="modal-content">
+                    <button class="modal-close" aria-label="Close">×</button>
+                    <div class="modal-body">
+                        {technical_flow_svg}
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                (() => {{
+                    const getRoot = () => {{
+                        const app = document.querySelector('gradio-app');
+                        return app && app.shadowRoot ? app.shadowRoot : document;
+                    }};
+
+                    const root = getRoot();
+                    const trigger = root.getElementById('arch-svg-trigger');
+                    const modal = root.getElementById('arch-modal');
+                    const closeBtn = modal ? modal.querySelector('.modal-close') : null;
+
+                    const open = () => {{
+                        if (!modal) return;
+                        modal.classList.add('show');
+                        document.body.classList.add('modal-open');
+                    }};
+
+                    const close = () => {{
+                        if (!modal) return;
+                        modal.classList.remove('show');
+                        document.body.classList.remove('modal-open');
+                    }};
+
+                    if (trigger) trigger.addEventListener('click', open);
+                    if (closeBtn) closeBtn.addEventListener('click', close);
+                    if (modal) {{
+                        modal.addEventListener('click', (evt) => {{
+                            if (evt.target === modal) close();
+                        }});
+                    }}
+                    document.addEventListener('keydown', (evt) => {{
+                        if (evt.key === 'Escape' && modal && modal.classList.contains('show')) close();
+                    }});
+                }})();
+            </script>
             """
         )
 
         gr.HTML(
             """
-            <div style="
-                width: 100%;
-                padding: 2rem;
-                border-radius: 12px;
-                background: linear-gradient(145deg, #0f172a 0%, #111827 50%, #1e1b4b 100%);
-                border: 1px solid #374151;
-                box-shadow: 0 12px 25px rgba(0,0,0,0.35);
-                margin-bottom: 2rem;
-            ">
-                
-                <h2 style="
-                    text-align:center;
-                    font-size: 28px;
-                    color: #e5e7eb;
-                    font-weight: 800;
-                    margin-bottom: 1.5rem;
-                    letter-spacing: 0.5px;
-                ">
-                    🚀 How to Use the RAG-Vision Engine
-                </h2>
+            <div class="howto-section">
+                <h2 class="howto-title">🚀 How to Use the RAG-Vision Engine</h2>
 
-                <div style="
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                    gap: 1.5rem;
-                    padding: 0 1rem;
-                ">
+                <div class="howto-grid">
 
                     <!-- STEP 1 -->
-                    <div style="
-                        background: rgba(255,255,255,0.04);
-                        border: 1px solid rgba(255,255,255,0.1);
-                        border-radius: 14px;
-                        padding: 1.5rem;
-                        backdrop-filter: blur(6px);
-                    ">
-                        <h3 style="color:#a5b4fc; margin-bottom:0.8rem;">📂 Step 1: Define Classes</h3>
-                        <p style="color:#d1d5db; font-size:15px; line-height:1.6;">
+                    <div class="howto-card">
+                        <h3>📂 Step 1: Define Classes</h3>
+                        <p>
                             Provide two class names (e.g., <b>clean</b> vs <b>dirty</b>) and upload several
                             example images for each class. This builds the <b>support set</b>.
                         </p>
                     </div>
 
                     <!-- STEP 2 -->
-                    <div style="
-                        background: rgba(255,255,255,0.04);
-                        border: 1px solid rgba(255,255,255,0.1);
-                        border-radius: 14px;
-                        padding: 1.5rem;
-                        backdrop-filter: blur(6px);
-                    ">
-                        <h3 style="color:#a5b4fc; margin-bottom:0.8rem;">✍️ Step 2: Write Prompts</h3>
-                        <p style="color:#d1d5db; font-size:15px; line-height:1.6;">
+                    <div class="howto-card">
+                        <h3>✍️ Step 2: Write Prompts</h3>
+                        <p>
                             Fill in the <b>System Prompt</b> to define the AI persona and output format.
                             Then describe the task in the <b>User Prompt</b>.
                         </p>
                     </div>
 
                     <!-- STEP 3 -->
-                    <div style="
-                        background: rgba(255,255,255,0.04);
-                        border: 1px solid rgba(255,255,255,0.1);
-                        border-radius: 14px;
-                        padding: 1.5rem;
-                        backdrop-filter: blur(6px);
-                    ">
-                        <h3 style="color:#a5b4fc; margin-bottom:0.8rem;">🖼️ Step 3: Upload Query Image</h3>
-                        <p style="color:#d1d5db; font-size:15px; line-height:1.6;">
+                    <div class="howto-card">
+                        <h3>🖼️ Step 3: Upload Query Image</h3>
+                        <p>
                             Select the <b>target image</b> you want the AI to classify
                             using retrieval-augmented visual reasoning.
                         </p>
                     </div>
 
                     <!-- STEP 4 -->
-                    <div style="
-                        background: rgba(255,255,255,0.04);
-                        border: 1px solid rgba(255,255,255,0.1);
-                        border-radius: 14px;
-                        padding: 1.5rem;
-                        backdrop-filter: blur(6px);
-                    ">
-                        <h3 style="color:#a5b4fc; margin-bottom:0.8rem;">🧠 Step 4: Configure Settings</h3>
-                        <p style="color:#d1d5db; font-size:15px; line-height:1.6;">
+                    <div class="howto-card">
+                        <h3>🧠 Step 4: Configure Settings</h3>
+                        <p>
                             Adjust retrieval parameters (<b>k-retrieval</b> and <b>patch size</b>),
                             as well as model generation settings (<b>temperature</b>, <b>top-p</b>).
                         </p>
                     </div>
 
                     <!-- STEP 5 (Unified) -->
-                    <div style="
-                        background: rgba(255,255,255,0.04);
-                        border: 1px solid rgba(255,255,255,0.1);
-                        border-radius: 14px;
-                        padding: 1.5rem;
-                        backdrop-filter: blur(6px);
-                    ">
-                        <h3 style="color:#a5b4fc; margin-bottom:0.8rem;">🚀 Step 5: Run & Review Output</h3>
-                        <p style="color:#d1d5db; font-size:15px; line-height:1.6;">
+                    <div class="howto-card">
+                        <h3>🚀 Step 5: Run & Review Output</h3>
+                        <p>
                             Click <b>Run RAG-Vision Analysis</b> to execute the entire pipeline.
-                            <br>
                             Review the predicted <b>binary label</b>, the <b>reasoning</b>,
                             and optionally inspect the <b>raw JSON output</b>.
                         </p>
